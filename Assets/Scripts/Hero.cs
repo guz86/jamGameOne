@@ -1,6 +1,4 @@
-using System;
-using System.Collections;
-using Unity.Collections.LowLevel.Unsafe;
+using System.Collections; 
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
@@ -13,7 +11,9 @@ public class Hero : MonoBehaviour
     [SerializeField] private float _radius;
     [SerializeField] private float _force;
     [SerializeField] private Sprite _deadSprite;
-    [SerializeField] private PlaySoundComponent _soundComponent;
+    [SerializeField] private Hero _hero;
+    private SpriteRenderer _sprite;
+    private PlaySoundComponent _soundComponent;
     
     [SerializeField] private GameObject _explosionPrefub;
 
@@ -22,27 +22,36 @@ public class Hero : MonoBehaviour
     private bool FeatureExplode = false;
 
     // время исчезновения
-    [SerializeField] private float _alfaTime = 10;
-
+    [SerializeField] private float _alfaTime = 10f;
+    [SerializeField] private float _alfaWorkTime = 10f;
+    [SerializeField] private float _timeWaitRestart = 3f;
+     
+    private bool _heroDead;
+    
+    private Animator _animator;
+    private static readonly int ExplodeKey = Animator.StringToHash("explode");
+    
     // через переопределение методов
     private void Awake()
     {
         // заберем физическое тело
         _rigidbody = GetComponent<Rigidbody2D>();
         _soundComponent = GetComponent<PlaySoundComponent>();
+        _animator = GetComponent<Animator>();
     }
 
     private void Start()
     {
-       
+        _sprite = _hero.GetComponent<SpriteRenderer>();
+        StartCoroutine(ChangeColor(_sprite, 255));
     }
 
     private void FixedUpdate()
     {
         var xVelocity = _direction.x * _speed;
-        // ПРЫЖОК, как прыгаем
+        
         var yVelocity = _direction.y * _speed;
-        ;
+        
         // ПЕРЕМЕЩЕНИЕ
         _rigidbody.velocity = new Vector2(xVelocity, yVelocity);
         
@@ -59,20 +68,24 @@ public class Hero : MonoBehaviour
         // получим спрайт для которого будем менять альфа
         var sprite = target.GetComponent<SpriteRenderer>();
 
-        StartCoroutine(ChangeColor(sprite, 255));
+        
+          //  StartCoroutine(ChangeColor(sprite, 255));
+        
     }
 
     private IEnumerator ChangeColor(SpriteRenderer spriteRenderer, float destR)
     {
         // myGameObject.color = new Color32( 0, 255, 255, 255 );
         // myGameObject.color = new Color32( 255, 255, 255, 255 );
-        
+        //Debug.Log($"ChangeColor");
         // текущее время анимации
         var alfaTime = 0f;
         // дефольтное значение
         var colorR = spriteRenderer.color.r;
-        while (alfaTime < _alfaTime)
+        while (alfaTime < _alfaWorkTime)
         {
+            //Debug.Log($"alfaTime {alfaTime}");
+            //Debug.Log($"_alfaTime {_alfaTime}");
             alfaTime += Time.deltaTime;
             var progress = alfaTime / _alfaTime;
             // меняем цвет
@@ -85,21 +98,41 @@ public class Hero : MonoBehaviour
             // меняем значение альфа
             color.r = tmpR;
             //Debug.Log(spriteRenderer.color.r);
+            //
             
             if (tmpR > 0.95)
             {
                 spriteRenderer.sprite = _deadSprite;
             }
+            //Debug.Log(tmpR);
             
-            if (tmpR > 1)
-            {
-                Restart();
-            }
+            // if (tmpR == 0.9546366)
+            // {
+            //     _soundComponent.Play("Dead");
+            // }
+            //
+            // if (tmpR > 1)
+            // {
+            //     Restart();
+            // }
             // запишем новое значение в наш спрайт
             spriteRenderer.color = color; 
             // вызов пропустит кадр
             yield return null;
         } 
+        //Debug.Log($"ChangeColor STOP");
+        _heroDead = true;
+        if (_heroDead)
+        {
+            _soundComponent.Play("Dead");
+            yield return new WaitForSeconds(_timeWaitRestart);;
+            Restart();
+        }
+    }
+    
+    private IEnumerator WaitForSeconds(float value)
+    {
+        yield return new WaitForSeconds(value);
     }
 
     public void Restart()
@@ -119,8 +152,7 @@ public class Hero : MonoBehaviour
     }
 
     public void PlaySoundBite()
-    {
-        
+    { 
         _soundComponent.Play("Bite");
     }
     
@@ -129,6 +161,7 @@ public class Hero : MonoBehaviour
         if (FeatureExplode)
         {
             //Debug.Log("Explode");
+            _animator.SetTrigger(ExplodeKey);
             _soundComponent.Play("Explode");
             Instantiate(_explosionPrefub, transform.position, Quaternion.identity);
         
@@ -148,6 +181,7 @@ public class Hero : MonoBehaviour
 
         FeatureExplode = false;
     }
+
 
     private void OnDrawGizmos()
     {

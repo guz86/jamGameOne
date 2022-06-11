@@ -194,7 +194,14 @@ MonoBehaviour:
     m_HorizontalOverflow: 0
     m_VerticalOverflow: 0
     m_LineSpacing: 1
-  m_Text: "\u0421ontrol:\r\n\nWASD\r\nE - use garlic\r\nR - Reload Level"
+  m_Text: ' Control:
+
+
+    WASD
+
+    E - Use Garlic
+
+    R - Reload Level'
 --- !u!222 &380695675
 CanvasRenderer:
   m_ObjectHideFlags: 0

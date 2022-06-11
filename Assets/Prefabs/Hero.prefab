@@ -84,7 +84,7 @@ SpriteRenderer:
   m_FlipX: 0
   m_FlipY: 0
   m_DrawMode: 0
-  m_Size: {x: 10, y: 10}
+  m_Size: {x: 0.99, y: 2.77}
   m_AdaptiveModeThreshold: 0.5
   m_SpriteTileMode: 0
   m_WasSpriteAssigned: 1
@@ -145,6 +145,7 @@ MonoBehaviour:
   _radius: 3
   _force: 3
   _deadSprite: {fileID: 21300000, guid: b12677307e58fe3489c1efb63a061719, type: 3}
+  _soundComponent: {fileID: 0}
   _explosionPrefub: {fileID: 7219656519671123511, guid: 23c805c5d38cbfe43a6bb3ef9e460f50, type: 3}
   _alfaTime: 10000
 --- !u!114 &7997736906439690948
