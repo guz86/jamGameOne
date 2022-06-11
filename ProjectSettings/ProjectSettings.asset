@@ -13,7 +13,7 @@ PlayerSettings:
   useOnDemandResources: 0
   accelerometerFrequency: 60
   companyName: GordienkoGames
-  productName: jamGameOne
+  productName: Pickle theory
   defaultCursor: {fileID: 0}
   cursorHotspot: {x: 0, y: 0}
   m_SplashScreenBackgroundColor: {r: 0.14150941, g: 0.13283195, b: 0.13283195, a: 1}
