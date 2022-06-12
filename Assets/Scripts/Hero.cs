@@ -30,6 +30,7 @@ public class Hero : MonoBehaviour
     
     private Animator _animator;
     private static readonly int ExplodeKey = Animator.StringToHash("explode");
+    private static readonly int DeadKey = Animator.StringToHash("dead");
     
     // через переопределение методов
     private void Awake()
@@ -100,9 +101,10 @@ public class Hero : MonoBehaviour
             //Debug.Log(spriteRenderer.color.r);
             //
             
-            if (tmpR > 0.95)
+            if (tmpR > 0.94f)
             {
-                spriteRenderer.sprite = _deadSprite;
+                _animator.SetTrigger(DeadKey);
+                //spriteRenderer.sprite = _deadSprite;
             }
             //Debug.Log(tmpR);
             
