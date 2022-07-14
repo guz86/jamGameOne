@@ -10,12 +10,18 @@ public class Hero : MonoBehaviour
     
     [SerializeField] private float _radius;
     [SerializeField] private float _force;
-    [SerializeField] private Sprite _deadSprite;
+    //[SerializeField] private Sprite _deadSprite;
     [SerializeField] private Hero _hero;
     private SpriteRenderer _sprite;
     private PlaySoundComponent _soundComponent;
     
     [SerializeField] private GameObject _explosionPrefub;
+    
+    [SerializeField] private GameObject _pool;
+    [SerializeField] private GameObject _arrowRight;
+    [SerializeField] private GameObject _arrowLeft;
+    [SerializeField] private GameObject _arrowTop;
+    [SerializeField] private GameObject _arrowBottom;
 
     private Rigidbody2D _rigidbody;
     private Vector2 _direction;
@@ -24,8 +30,9 @@ public class Hero : MonoBehaviour
     // время исчезновения
     [SerializeField] private float _alfaTime = 10f;
     [SerializeField] private float _alfaWorkTime = 10f;
-    [SerializeField] private float _timeWaitRestart = 3f;
-     
+    [SerializeField] private float _WaitRestartTime = 3f;
+    [SerializeField] private float _WaitDeadTime = 10f;
+    
     private bool _heroDead;
     
     private Animator _animator;
@@ -45,18 +52,35 @@ public class Hero : MonoBehaviour
     {
         _sprite = _hero.GetComponent<SpriteRenderer>();
         StartCoroutine(ChangeColor(_sprite, 255));
+        StartCoroutine(DeadHeroSound(_WaitDeadTime, _WaitRestartTime));
     }
 
     private void FixedUpdate()
     {
+        // управление героем
         var xVelocity = _direction.x * _speed;
-        
         var yVelocity = _direction.y * _speed;
-        
-        // ПЕРЕМЕЩЕНИЕ
         _rigidbody.velocity = new Vector2(xVelocity, yVelocity);
-        
 
+        // пул из стрелок
+        _pool.transform.position = transform.position;
+        ActiveArrow(xVelocity, _speed, _arrowRight);
+        ActiveArrow(xVelocity, -_speed, _arrowLeft);
+        ActiveArrow(yVelocity, _speed, _arrowTop);
+        ActiveArrow(yVelocity, -_speed, _arrowBottom);
+    }
+
+    // включение стрелок
+    private void ActiveArrow(float velocity, float speed, GameObject gm)
+    {
+        if (velocity == speed)
+        {
+            gm.SetActive(true);
+        }
+        else
+        {
+            gm.SetActive(false);
+        }
     }
 
     public void SetDirection(Vector2 direction)
@@ -89,6 +113,15 @@ public class Hero : MonoBehaviour
             //Debug.Log($"_alfaTime {_alfaTime}");
             alfaTime += Time.deltaTime;
             var progress = alfaTime / _alfaTime;
+            
+            //Debug.Log( _rigidbody.mass);
+            // 20 => 1 при мариновании уменьшается сила
+            if ( _rigidbody.mass > 0.3f)
+            {
+                _rigidbody.mass -= Time.deltaTime;
+            }
+            
+            
             // меняем цвет
             var tmpR = Mathf.Lerp(colorR, destR, progress);
             
@@ -123,18 +156,30 @@ public class Hero : MonoBehaviour
             yield return null;
         } 
         //Debug.Log($"ChangeColor STOP");
-        _heroDead = true;
-        if (_heroDead)
-        {
-            _soundComponent.Play("Dead");
-            yield return new WaitForSeconds(_timeWaitRestart);;
-            Restart();
-        }
+        //Debug.Log($"alfaTime" + alfaTime);
+        
+        // звук смерти
+        // _heroDead = true;
+        // if (_heroDead)
+        // {
+        //     _soundComponent.Play("Dead");
+        //     yield return new WaitForSeconds(_WaitRestartTime);;
+        //     Restart();
+        // }
     }
     
     private IEnumerator WaitForSeconds(float value)
     {
         yield return new WaitForSeconds(value);
+    }
+
+    // звук смерти
+    private IEnumerator DeadHeroSound(float valueDeadTime, float valueRestartTime)
+    {
+        yield return new WaitForSeconds(valueDeadTime);
+        _soundComponent.Play("Dead");
+        yield return new WaitForSeconds(valueRestartTime);
+        Restart();
     }
 
     public void Restart()
